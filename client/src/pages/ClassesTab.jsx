@@ -358,7 +358,6 @@ export default function ClassesTab() {
                                         fontSize: "0.75rem",
                                         color: "var(--accent)",
                                         cursor: "pointer",
-                                        textDecoration: "underline",
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 4
