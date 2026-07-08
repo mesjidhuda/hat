@@ -1,0 +1,81 @@
+:root {
+    /* Colors */
+    --primary: #1e3d1f;
+    --accent: #d4af37;
+    --bg-dark: #0d130d;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-muted: rgba(255, 255, 255, 0.5);
+
+    /* Typography */
+    --font-family: "Outfit", sans-serif;
+    --font-heading: "Merriweather", serif;
+    --font-arabic: "Cairo", sans-serif;
+
+    --fs-xs: 0.75rem; /* 12px → 10.2px at 85% */
+    --fs-sm: 0.8rem; /* 12.8px */
+    --fs-base: 0.9rem; /* 14.4px */
+    --fs-md: 1rem; /* 16px */
+    --fs-lg: 1.1rem; /* 17.6px */
+    --fs-xl: 1.25rem; /* 20px */
+    --fs-2xl: 1.4rem; /* 22.4px */
+    --fs-3xl: 1.6rem; /* 25.6px */
+    --fs-4xl: 1.8rem; /* 28.8px */
+    --fs-5xl: 2.2rem; /* 35.2px */
+
+    /* Spacing */
+    --space-xs: 0.25rem; /* 4px */
+    --space-sm: 0.5rem; /* 8px */
+    --space-md: 0.75rem; /* 12px */
+    --space-lg: 1rem; /* 16px */
+    --space-xl: 1.25rem; /* 20px */
+    --space-2xl: 1.5rem; /* 24px */
+    --space-3xl: 2rem; /* 32px */
+    --space-4xl: 2.5rem; /* 40px */
+    --space-5xl: 3rem; /* 48px */
+    --space-6xl: 3.75rem; /* 60px */
+    --space-7xl: 5.625rem; /* 90px */
+
+    /* Sizing (width/height) */
+    --size-icon-sm: 1rem; /* 16px */
+    --size-icon-md: 1.25rem; /* 20px */
+    --size-icon-lg: 1.5rem; /* 24px */
+    --size-avatar: 2.75rem; /* 44px */
+    --size-tab: 2.25rem; /* 36px */
+    --size-back-btn: 2.5rem; /* 40px */
+    --size-lock-icon: 4.375rem; /* 70px */
+    --size-dot: 0.875rem; /* 14px */
+
+    /* Container widths */
+    --container-sm: 22.5rem; /* 360px */
+    --container-md: 28.125rem; /* 450px */
+    --container-lg: 31.25rem; /* 500px */
+    --container-xl: 37.5rem; /* 600px */
+
+    /* Border Radii */
+    --radius-sm: 0.25rem; /* 4px */
+    --radius-md: 0.5rem; /* 8px */
+    --radius-lg: 0.75rem; /* 12px */
+    --radius-xl: 1rem; /* 16px */
+    --radius-2xl: 1.25rem; /* 20px */
+    --radius-3xl: 1.5rem; /* 24px */
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 0.625rem 1.875rem rgba(0, 0, 0, 0.5);
+    --shadow-gold: 0 0.3125rem 1.25rem rgba(212, 175, 55, 0.3);
+    --shadow-gold-hover: 0 0.5rem 1.5625rem rgba(212, 175, 55, 0.4);
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-bounce: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Breakpoints */
+    --bp-mobile: 480px;
+    --bp-tablet: 768px;
+}

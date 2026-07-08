@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Offline – Huda Masjid</title>
+        <style>
+            :root {
+                --bg-dark: #0d130d;
+                --accent: #d4af37;
+                --text-primary: #ffffff;
+                --text-secondary: rgba(255, 255, 255, 0.7);
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background: var(--bg-dark);
+                background-image: radial-gradient(
+                    circle at top right,
+                    #2c5f2d 0%,
+                    transparent 40%
+                );
+                background-attachment: fixed;
+                font-family: "Outfit", sans-serif;
+                color: var(--text-primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                text-align: center;
+                padding: 20px;
+            }
+            .card {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 24px;
+                padding: 40px 30px;
+                max-width: 400px;
+                width: 100%;
+            }
+            h1 {
+                font-family: "Merriweather", serif;
+                color: var(--accent);
+                margin-bottom: 10px;
+            }
+            p {
+                color: var(--text-secondary);
+                font-size: 0.95rem;
+                margin-bottom: 20px;
+            }
+            .icon {
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="icon">🕌</div>
+            <h1>You're Offline</h1>
+            <p>
+                Huda Masjid Attendance Manager requires an internet connection
+                to load data.
+            </p>
+            <p style="font-size: 0.8rem; opacity: 0.6">
+                Please check your connection and try again.
+            </p>
+        </div>
+    </body>
+</html>

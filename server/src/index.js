@@ -1,0 +1,51 @@
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const connectDB = require("./config/db");
+require("dotenv").config();
+
+const app = express();
+
+// Connect to database
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// API routes
+app.use("/api/admin", require("./routes/admin"));
+app.use("/api/calendar", require("./routes/calendar"));
+app.use("/api/classes", require("./routes/classes"));
+app.use("/api/teacher", require("./routes/teacher"));
+app.use("/api/attendance", require("./routes/attendance"));
+app.use("/api/flags", require("./routes/flags"));
+app.use("/api/teacher-log", require("./routes/teacherLog"));
+app.use("/api/reports", require("./routes/reports"));
+app.use("/api/search", require("./routes/search"));
+app.use("/api/export", require("./routes/export"));
+app.use("/api/reset", require("./routes/reset"));
+app.use("/api/students", require("./routes/students"));
+app.use("/api/teachers", require("./routes/teachers"));
+app.use("/api/app", require("./routes/app"));
+
+// Health check
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// In production, serve the React build folder as static files
+if (process.env.NODE_ENV === "production") {
+    const clientBuildPath = path.join(__dirname, "../../client/dist");
+    app.use(express.static(clientBuildPath));
+
+    // For any route not handled by API, return the React app (client‑side routing)
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(clientBuildPath, "index.html"));
+    });
+}
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
