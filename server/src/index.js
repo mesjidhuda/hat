@@ -13,6 +13,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// ───── Maintenance mode check (must come before all routes) ─────
+app.use(require("./middleware/maintenance"));
+
 // API routes
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/calendar", require("./routes/calendar"));
@@ -29,7 +32,7 @@ app.use("/api/students", require("./routes/students"));
 app.use("/api/teachers", require("./routes/teachers"));
 app.use("/api/app", require("./routes/app"));
 
-// Health check
+// Health check (will also be blocked during maintenance because of the middleware above)
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
