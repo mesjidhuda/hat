@@ -569,7 +569,6 @@ export default function StudentsTab() {
                                     fontSize: "0.95rem",
                                     color: "var(--accent)",
                                     cursor: "pointer",
-                                    textDecoration: "underline",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 4
