@@ -5,7 +5,7 @@ import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import { toast } from "../components/Toast";
 
-// Inline SVG icons
+// Inline SVG icons – includes eye / eyeOff
 const Icon = ({ name, size = 18, color = "var(--text-secondary)" }) => {
     const icons = {
         edit: (
@@ -100,6 +100,36 @@ const Icon = ({ name, size = 18, color = "var(--text-secondary)" }) => {
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
             </svg>
+        ),
+        eye: (
+            <svg
+                viewBox="0 0 24 24"
+                width={size}
+                height={size}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+        ),
+        eyeOff: (
+            <svg
+                viewBox="0 0 24 24"
+                width={size}
+                height={size}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
         )
     };
     return icons[name] || null;
@@ -122,6 +152,9 @@ export default function ClassesTab() {
     // Delete confirmation state
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [classToDelete, setClassToDelete] = useState(null);
+
+    // PIN visibility – keyed by class id, value is the plain PIN string
+    const [visiblePins, setVisiblePins] = useState({});
 
     const fetchData = useCallback(async () => {
         try {
@@ -151,7 +184,7 @@ export default function ClassesTab() {
         }
     });
 
-    // ----- Add Modal -----
+    // ----- Add / Edit / Submit -----
     const openAddModal = () => {
         setEditingClass(null);
         setFormName("");
@@ -160,7 +193,6 @@ export default function ClassesTab() {
         setModalOpen(true);
     };
 
-    // ----- Edit Modal -----
     const openEditModal = cls => {
         setEditingClass(cls);
         setFormName(cls.name || "");
@@ -169,7 +201,6 @@ export default function ClassesTab() {
         setModalOpen(true);
     };
 
-    // ----- Submit Add/Edit -----
     const handleSubmit = async () => {
         if (!formName.trim()) {
             toast.error("Class name is required");
@@ -212,7 +243,7 @@ export default function ClassesTab() {
         }
     };
 
-    // ----- Delete Handlers -----
+    // ----- Delete handlers -----
     const handleDeleteClick = cls => {
         setClassToDelete(cls);
         setDeleteModalOpen(true);
@@ -230,12 +261,48 @@ export default function ClassesTab() {
         }
     };
 
-    // ----- Navigation to Teacher Profile -----
+    // ----- Toggle PIN visibility -----
+    const handleTogglePin = async classId => {
+        // If already visible, hide it
+        if (visiblePins[classId] !== undefined) {
+            setVisiblePins(prev => {
+                const updated = { ...prev };
+                delete updated[classId];
+                return updated;
+            });
+            return;
+        }
+
+        try {
+            const { data } = await api.get(`/classes/${classId}/pin`);
+            if (data.pin) {
+                setVisiblePins(prev => ({ ...prev, [classId]: data.pin }));
+                // Auto‑hide after 10 seconds
+                setTimeout(() => {
+                    setVisiblePins(prev => {
+                        const updated = { ...prev };
+                        delete updated[classId];
+                        return updated;
+                    });
+                }, 10000);
+            } else {
+                toast.error(
+                    "PIN not available. Please edit this class and set a new PIN."
+                );
+            }
+        } catch (err) {
+            toast.error(
+                err.response?.data?.message || "Could not retrieve PIN"
+            );
+        }
+    };
+
+    // ----- Teacher profile navigation -----
     const goToTeacherProfile = classId => {
         navigate(`/teacher-profile/${classId}`);
     };
 
-    // ----- Loading / Error States -----
+    // ----- Loading / Error -----
     if (loading) {
         return (
             <div
@@ -309,7 +376,6 @@ export default function ClassesTab() {
                             alignItems: "flex-start"
                         }}
                     >
-                        {/* Class Info */}
                         <div
                             style={{
                                 display: "flex",
@@ -394,13 +460,47 @@ export default function ClassesTab() {
                                             gap: 4
                                         }}
                                     >
-                                        <Icon name="lock" /> PIN: ••••
+                                        <Icon name="lock" />
+                                        PIN:{" "}
+                                        {visiblePins[cls._id] !== undefined
+                                            ? visiblePins[cls._id]
+                                            : "••••"}
+                                        <button
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                handleTogglePin(cls._id);
+                                            }}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                cursor: "pointer",
+                                                padding: 0,
+                                                marginLeft: 4,
+                                                display: "flex",
+                                                alignItems: "center"
+                                            }}
+                                            title={
+                                                visiblePins[cls._id] !==
+                                                undefined
+                                                    ? "Hide PIN"
+                                                    : "Show PIN"
+                                            }
+                                        >
+                                            <Icon
+                                                name={
+                                                    visiblePins[cls._id] !==
+                                                    undefined
+                                                        ? "eyeOff"
+                                                        : "eye"
+                                                }
+                                                size={14}
+                                            />
+                                        </button>
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Actions */}
                         <div
                             style={{
                                 display: "flex",
