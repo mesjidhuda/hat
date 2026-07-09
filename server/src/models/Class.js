@@ -16,6 +16,10 @@ const classSchema = new mongoose.Schema(
         pinHash: {
             type: String,
             required: [true, "Class PIN hash is required"]
+        },
+        pinPlain: {
+            type: String,
+            required: [true, "Class PIN (plain) is required"]
         }
     },
     { timestamps: true }
