@@ -12,14 +12,13 @@ export default function HomePage() {
         <div className="container">
             {/* Top Star Divider */}
             <div className="top-divider">
-<p className="footer-text">بسم الله الرحمن الرحيم</p>
                 <span className="line"></span>
                 <svg viewBox="0 0 24 24" className="star-icon">
                     <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
                 </svg>
                 <span className="line"></span>
             </div>
-
+<p className="footer-text">بسم الله الرحمن الرحيم</p>
             <h1 className="app-title">Huda Masjid</h1>
             <h3 className="app-subtitle">Halqa Manager</h3>
             <p className="app-desc">Islamic Studies Attendance Tracker</p>
