@@ -46,7 +46,7 @@ export default function LockScreen() {
                 title="Huda Masjid"
                 subtitle="Halqa Manager"
                 showBack={false}
-                onCancel={() => {}} // No cancel on lock screen
+                onCancel={() => {}}
                 onVerify={async pin => {
                     try {
                         await api.post("/app/verify", { pin });
@@ -62,7 +62,7 @@ export default function LockScreen() {
     );
 }
 
-// First-time app setup (similar to admin setup)
+// Premium first‑time app setup
 function AppSetup({ onComplete }) {
     const [pin, setPin] = useState("");
     const [confirmPin, setConfirmPin] = useState("");
@@ -81,42 +81,65 @@ function AppSetup({ onComplete }) {
     };
 
     return (
-        <div className="auth-card" style={{ margin: "0 auto" }}>
-            <h2>Huda Masjid</h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
-                First time setup: create a 4‑digit PIN
-            </p>
-            {error && <p className="error-msg">{error}</p>}
-            <form onSubmit={handleSetup}>
-                <label htmlFor="setup-pin">PIN</label>
-                <input
-                    id="setup-pin"
-                    type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength="4"
-                    value={pin}
-                    onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
-                    required
-                    autoFocus
-                />
-                <label htmlFor="confirm-pin">Confirm PIN</label>
-                <input
-                    id="confirm-pin"
-                    type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength="4"
-                    value={confirmPin}
-                    onChange={e =>
-                        setConfirmPin(e.target.value.replace(/\D/g, ""))
-                    }
-                    required
-                />
-                <button type="submit" className="btn-primary">
-                    Set PIN
-                </button>
-            </form>
+        <div className="lock-container">
+            <div className="pin-entry-container">
+                {/* Lock Icon */}
+                <svg viewBox="0 0 24 24" className="pin-entry-lock-icon" fill="none">
+                    <rect x="4" y="11" width="16" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    <circle cx="12" cy="16" r="1" fill="var(--accent)" />
+                </svg>
+
+                <div className="pin-entry-header">
+                    <h2 className="pin-entry-title">Huda Masjid</h2>
+                    <p className="pin-entry-subtitle">Halqa Manager – Create App PIN</p>
+                </div>
+
+                {error && <p className="error-msg" style={{ marginBottom: 15 }}>{error}</p>}
+
+                <form onSubmit={handleSetup} style={{ width: "100%", maxWidth: 280, display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+                    {/* PIN Field */}
+                    <div style={{ width: "100%" }}>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: 6, display: "block", textAlign: "left" }}>
+                            Create PIN
+                        </label>
+                        <input
+                            type="password"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength="4"
+                            value={pin}
+                            onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
+                            className="pin-input-visible"
+                            placeholder="••••"
+                            autoFocus
+                            required
+                        />
+                    </div>
+
+                    {/* Confirm PIN Field */}
+                    <div style={{ width: "100%" }}>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: 6, display: "block", textAlign: "left" }}>
+                            Confirm PIN
+                        </label>
+                        <input
+                            type="password"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength="4"
+                            value={confirmPin}
+                            onChange={e => setConfirmPin(e.target.value.replace(/\D/g, ""))}
+                            className="pin-input-visible"
+                            placeholder="••••"
+                            required
+                        />
+                    </div>
+
+                    <button type="submit" className="add-btn" style={{ width: "100%", marginTop: 10 }}>
+                        Set PIN
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
