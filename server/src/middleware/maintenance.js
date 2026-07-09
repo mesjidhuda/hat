@@ -1,47 +1,47 @@
-const path = require('path');
-const fs = require('fs');
-
 module.exports = function maintenanceMode(req, res, next) {
   const isMaintenance = process.env.MAINTENANCE_MODE === 'true';
 
   if (!isMaintenance) return next();
 
-  const bypassSecret = process.env.MAINTENANCE_BYPASS_SECRET;
-  const isBypass = bypassSecret && (
-    req.query.bypass === bypassSecret ||
-    req.headers['x-bypass-maintenance'] === bypassSecret ||
-    req.path.startsWith('/api/admin')
-  );
-
-  if (isBypass) {
-    console.log('🔧 Maintenance bypass granted');
+  // Bypass
+  if (req.query.bypass === 'maintenancePath') {
+    console.log('Bypass granted');
     return next();
   }
 
-  // API routes
-  if (req.path.startsWith('/api')) {
-    return res.status(503).json({
-      success: false,
-      message: 'The application is currently under maintenance. Please try again later.',
-    });
-  }
-
-  // Try to serve maintenance.html
-  const possiblePaths = [
-    path.join(__dirname, '..', '..', '..', 'client', 'public', 'maintenance.html'),
-    path.join(__dirname, '..', '..', 'client', 'public', 'maintenance.html'), // alternative
-    path.join(process.cwd(), 'client', 'public', 'maintenance.html')
-  ];
-
-  for (const maintenancePath of possiblePaths) {
-    console.log('Trying maintenance path:', maintenancePath);
-    if (fs.existsSync(maintenancePath)) {
-      console.log('✅ Maintenance file found at:', maintenancePath);
-      return res.sendFile(maintenancePath);
-    }
-  }
-
-  // Final fallback
-  console.log('⚠️ Maintenance file not found, using inline HTML');
-  
+  // Simple inline page - no file path issues
+  return res.status(503).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Under Maintenance – Huda Masjid</title>
+      <style>
+        body {
+          background-color: #0d130d;
+          color: white;
+          font-family: Arial, sans-serif;
+          text-align: center;
+          padding: 50px;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        h1 { color: #d4af37; font-size: 2.5rem; }
+      </style>
+    </head>
+    <body>
+      <div>
+        <h1>🕌 Under Maintenance</h1>
+        <p>Huda Masjid Attendance Manager is currently undergoing maintenance.</p>
+        <p>We'll be back shortly. Thank you for your patience.</p>
+        <p style="margin-top:30px; font-size:0.9rem;">
+          <strong>Bypass test:</strong> Add ?bypass=maintenancePath to the URL
+        </p>
+      </div>
+    </body>
+    </html>
+  `);
 };
