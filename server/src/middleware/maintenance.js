@@ -4,25 +4,21 @@ const fs = require('fs');
 module.exports = function maintenanceMode(req, res, next) {
   const isMaintenance = process.env.MAINTENANCE_MODE === 'true';
 
-  if (!isMaintenance) {
-    return next();
-  }
+  if (!isMaintenance) return next();
 
-  // === Bypass for you (the developer/admin) ===
   const bypassSecret = process.env.MAINTENANCE_BYPASS_SECRET;
-  const isBypass = 
-    bypassSecret && (
-      req.query.bypass === bypassSecret ||                    // ?bypass=yoursecret
-      req.headers['x-bypass-maintenance'] === bypassSecret || // Custom header
-      req.path.startsWith('/api/admin')                       // Allow admin routes
-    );
+  const isBypass = bypassSecret && (
+    req.query.bypass === bypassSecret ||
+    req.headers['x-bypass-maintenance'] === bypassSecret ||
+    req.path.startsWith('/api/admin')
+  );
 
   if (isBypass) {
-    console.log('🔧 Maintenance bypass granted for admin');
+    console.log('🔧 Maintenance bypass granted');
     return next();
   }
 
-  // === API Routes - return JSON ===
+  // API routes
   if (req.path.startsWith('/api')) {
     return res.status(503).json({
       success: false,
@@ -30,11 +26,22 @@ module.exports = function maintenanceMode(req, res, next) {
     });
   }
 
-  // === Frontend Routes - serve maintenance.html ===
-  const maintenancePath = path.join(__dirname, '..', '..', '..', 'client', 'public', 'maintenance.html');
+  // Try to serve maintenance.html
+  const possiblePaths = [
+    path.join(__dirname, '..', '..', '..', 'client', 'public', 'maintenance.html'),
+    path.join(__dirname, '..', '..', 'client', 'public', 'maintenance.html'), // alternative
+    path.join(process.cwd(), 'client', 'public', 'maintenance.html')
+  ];
 
-  if (fs.existsSync(maintenancePath)) {
-    return res.sendFile(maintenancePath);
-  } 
+  for (const maintenancePath of possiblePaths) {
+    console.log('Trying maintenance path:', maintenancePath);
+    if (fs.existsSync(maintenancePath)) {
+      console.log('✅ Maintenance file found at:', maintenancePath);
+      return res.sendFile(maintenancePath);
+    }
+  }
 
+  // Final fallback
+  console.log('⚠️ Maintenance file not found, using inline HTML');
+  
 };
