@@ -4,10 +4,10 @@ const Class = require("../models/Class");
 const { protect } = require("../middleware/auth");
 const router = express.Router();
 
-// GET /api/classes – public (no auth) – only returns name, teacherName, _id
+// GET /api/classes – public (no auth) – only name, teacherName, _id
 router.get("/", async (req, res) => {
     try {
-        const classes = await Class.find().select("-pinHash");
+        const classes = await Class.find().select("-pinHash -pinPlain");
         res.json(classes);
     } catch (error) {
         res.status(500).json({ message: "Server error" });
@@ -28,7 +28,12 @@ router.post("/", async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(12);
         const pinHash = await bcrypt.hash(pin, salt);
-        const newClass = await Class.create({ name, teacherName, pinHash });
+        const newClass = await Class.create({
+            name,
+            teacherName,
+            pinHash,
+            pinPlain: pin // store plain PIN for admin viewing
+        });
         res.status(201).json({
             _id: newClass._id,
             name: newClass.name,
@@ -62,6 +67,7 @@ router.put("/:id", async (req, res) => {
             }
             const salt = await bcrypt.genSalt(12);
             classDoc.pinHash = await bcrypt.hash(pin, salt);
+            classDoc.pinPlain = pin; // update plain PIN as well
         }
         await classDoc.save();
         res.json({
@@ -75,6 +81,26 @@ router.put("/:id", async (req, res) => {
                 .status(400)
                 .json({ message: "Class name already exists" });
         }
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// GET /api/classes/:id/pin – reveal PIN (admin only)
+router.get("/:id/pin", async (req, res) => {
+    try {
+        const classDoc = await Class.findById(req.params.id);
+        if (!classDoc)
+            return res.status(404).json({ message: "Class not found" });
+
+        if (!classDoc.pinPlain) {
+            return res.status(400).json({
+                message:
+                    "PIN not available. Please edit this class and set the PIN again to enable viewing."
+            });
+        }
+
+        res.json({ pin: classDoc.pinPlain });
+    } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
 });
