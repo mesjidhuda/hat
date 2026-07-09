@@ -14,7 +14,25 @@ app.use(cors());
 app.use(express.json());
 
 // ───── Maintenance mode check (must come before all routes) ─────
-app.use(require("./middleware/maintenance"));
+// ───── Temporary Maintenance Test ─────
+app.use((req, res, next) => {
+  console.log('Maintenance middleware hit - Path:', req.path);
+  
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    if (req.query.bypass === 'maintenancePath') {
+      console.log('Bypass granted');
+      return next();
+    }
+    
+    return res.send(`
+      <h1 style="color:red;text-align:center;margin-top:100px;">
+        MAINTENANCE MODE ACTIVE - Test Page
+      </h1>
+      <p style="text-align:center;">If you see this, middleware is working.</p>
+    `);
+  }
+  next();
+});
 
 // API routes
 app.use("/api/admin", require("./routes/admin"));
