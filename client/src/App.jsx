@@ -14,6 +14,7 @@ import TeacherHome from "./pages/TeacherHome";
 import TeacherClass from "./pages/TeacherClass";
 import StudentProfile from "./pages/StudentProfile";
 import TeacherProfile from "./pages/TeacherProfile";
+import CategoryDetail from "./pages/CategoryDetail"; // new import
 import { ToastProvider } from "./components/Toast";
 import "./styles/globals.css";
 
@@ -34,6 +35,10 @@ function AppRoutes() {
             <Route path="/teacher/class/:id" element={<TeacherClass />} />
             <Route path="/admin" element={<AdminAuth />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route
+                path="/admin/category/:category"
+                element={<CategoryDetail />}
+            />
             <Route path="/student/:id" element={<StudentProfile />} />
             <Route
                 path="/teacher-profile/:classId"
