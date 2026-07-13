@@ -3,6 +3,7 @@ const AttendanceRecord = require("../models/AttendanceRecord");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
 const TeacherLog = require("../models/TeacherLog");
+const Flag = require("../models/Flag"); // added for today's flags
 const { protect } = require("../middleware/auth");
 const { ethiopianToGregorian } = require("../utils/ethiopianCalendar");
 const router = express.Router();
@@ -336,6 +337,81 @@ router.get("/monthly", async (req, res) => {
             rankedAbsences
         });
     } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// ─── NEW: Today’s attendance summary per status + flagged + notes ───
+router.get("/today", async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // All attendance records for today
+        const records = await AttendanceRecord.find({
+            date: { $gte: today, $lt: tomorrow }
+        })
+            .populate("student", "name class")
+            .populate("class", "name");
+
+        // Counts per status and notes
+        const statusCounts = { Present: 0, Late: 0, Absent: 0, Excused: 0 };
+        const notesCount = records.filter(r => r.note && r.note.trim()).length;
+        records.forEach(r => statusCounts[r.status]++);
+
+        // Group students by status
+        const groups = {
+            Present: [],
+            Late: [],
+            Absent: [],
+            Excused: [],
+            Note: [],
+            Flagged: []
+        };
+
+        records.forEach(r => {
+            const studentData = {
+                _id: r.student?._id,
+                name: r.student?.name || "Unknown",
+                class: r.class?.name || "Unknown",
+                note: r.note || "",
+                status: r.status,
+                isEdited: r.isEdited
+            };
+            groups[r.status].push(studentData);
+            if (r.note && r.note.trim()) {
+                groups.Note.push({ ...studentData, status: r.status });
+            }
+        });
+
+        // Today’s flags (both auto and behavior)
+        const todayFlags = await Flag.find({
+            dateFlagged: { $gte: today, $lt: tomorrow }
+        }).populate("student", "name class");
+
+        todayFlags.forEach(flag => {
+            groups.Flagged.push({
+                _id: flag.student?._id,
+                name: flag.student?.name || "Unknown",
+                class: flag.student?.class?.name || "Unknown",
+                reason: flag.reason,
+                type: flag.type
+            });
+        });
+
+        res.json({
+            date: today.toISOString().split("T")[0],
+            counts: {
+                ...statusCounts,
+                Notes: notesCount,
+                Flagged: todayFlags.length
+            },
+            groups
+        });
+    } catch (error) {
+        console.error("Today report error:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
