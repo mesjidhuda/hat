@@ -249,7 +249,6 @@ export default function CategoryDetail() {
                 <div>
                     <h2
                         style={{
-                            fontFamily: "Merriweather, serif",
                             fontWeight: 700,
                             fontSize: "1.3rem",
                             color: "var(--accent)",
