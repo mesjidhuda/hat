@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import {
     getTodayEthiopian,
@@ -6,7 +7,7 @@ import {
 } from "../utils/ethiopianCalendar";
 import FlaggedStudentsModal from "../components/FlaggedStudentsModal";
 
-// Small SVG icon component (only the icons used in stats)
+// Small SVG icon component
 const Icon = ({ name, color = "var(--accent)" }) => {
     const icons = {
         users: (
@@ -34,6 +35,36 @@ const Icon = ({ name, color = "var(--accent)" }) => {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
             </>
+        ),
+        present: (
+            <>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </>
+        ),
+        late: (
+            <>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </>
+        ),
+        absent: (
+            <>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+            </>
+        ),
+        excused: (
+            <>
+                <path d="M20 6L9 17l-5-5" />
+            </>
+        ),
+        note: (
+            <>
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </>
         )
     };
     return (
@@ -53,6 +84,7 @@ const Icon = ({ name, color = "var(--accent)" }) => {
 };
 
 export default function DashboardTab() {
+    const navigate = useNavigate();
     const todayEth = getTodayEthiopian();
     const [stats, setStats] = useState({
         totalStudents: 0,
@@ -60,28 +92,30 @@ export default function DashboardTab() {
         flaggedStudents: 0,
         sessionsToday: 0
     });
+    const [todaySummary, setTodaySummary] = useState(null);
     const [classes, setClasses] = useState([]);
     const [submittedClassIds, setSubmittedClassIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    // Flagged students modal state
     const [flaggedModalOpen, setFlaggedModalOpen] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
             const today = new Date().toISOString().split("T")[0];
-            const [studentsRes, classesRes, flagsRes, logsRes] =
+            const [studentsRes, classesRes, flagsRes, logsRes, todayRes] =
                 await Promise.all([
                     api.get("/students"),
                     api.get("/classes"),
                     api.get("/flags"),
-                    api.get("/teacher-log")
+                    api.get("/teacher-log"),
+                    api.get("/reports/today")
                 ]);
             const students = studentsRes.data;
             const allClasses = classesRes.data;
             const flags = flagsRes.data;
             const logs = logsRes.data;
+            const todayData = todayRes.data;
 
             const todayLogs = logs.filter(
                 log => log.sessionDate && log.sessionDate.startsWith(today)
@@ -96,6 +130,7 @@ export default function DashboardTab() {
                 flaggedStudents: flags.length,
                 sessionsToday: uniqueClassIds.length
             });
+            setTodaySummary(todayData);
             setClasses(allClasses);
             setSubmittedClassIds(uniqueClassIds);
             setLoading(false);
@@ -108,6 +143,10 @@ export default function DashboardTab() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const handleCategoryClick = category => {
+        navigate(`/admin/category/${category}`);
+    };
 
     if (loading) {
         return (
@@ -166,7 +205,6 @@ export default function DashboardTab() {
                     <div className="stat-number">{stats.totalClasses}</div>
                     <div className="stat-label">Total Classes</div>
                 </div>
-                {/* Clickable Flagged Students card */}
                 <div
                     className="stat-card"
                     onClick={() => setFlaggedModalOpen(true)}
@@ -191,18 +229,117 @@ export default function DashboardTab() {
                 </div>
             </div>
 
-            {/* Summary Card */}
-            <div className="summary-card">
-                <div className="summary-title">Today's Summary</div>
-                <div className="summary-date">
-                    {formatEthiopianDate(todayEth)}
+            {/* Today's Detailed Summary */}
+            {todaySummary && (
+                <div className="summary-card" style={{ marginTop: 15 }}>
+                    <div className="summary-title">
+                        Today's Summary – {formatEthiopianDate(todayEth)}
+                    </div>
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)",
+                            gap: 12,
+                            marginTop: 15
+                        }}
+                    >
+                        {[
+                            {
+                                label: "Present",
+                                count: todaySummary.counts.Present,
+                                icon: "present",
+                                color: "#4caf50",
+                                category: "present"
+                            },
+                            {
+                                label: "Late",
+                                count: todaySummary.counts.Late,
+                                icon: "late",
+                                color: "#2196f3",
+                                category: "late"
+                            },
+                            {
+                                label: "Absent",
+                                count: todaySummary.counts.Absent,
+                                icon: "absent",
+                                color: "#f44336",
+                                category: "absent"
+                            },
+                            {
+                                label: "Excused",
+                                count: todaySummary.counts.Excused,
+                                icon: "excused",
+                                color: "#ffc107",
+                                category: "excused"
+                            },
+                            {
+                                label: "Flagged",
+                                count: todaySummary.counts.Flagged,
+                                icon: "alertTriangle",
+                                color: "#e74c3c",
+                                category: "flagged"
+                            },
+                            {
+                                label: "Notes",
+                                count: todaySummary.counts.Notes,
+                                icon: "note",
+                                color: "#9b59b6",
+                                category: "notes"
+                            }
+                        ].map(item => (
+                            <div
+                                key={item.category}
+                                onClick={() =>
+                                    handleCategoryClick(item.category)
+                                }
+                                style={{
+                                    background: "var(--glass)",
+                                    border: "1px solid var(--glass-border)",
+                                    borderRadius: 12,
+                                    padding: "12px 8px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s"
+                                }}
+                                onMouseEnter={e =>
+                                    (e.currentTarget.style.background =
+                                        "rgba(255,255,255,0.08)")
+                                }
+                                onMouseLeave={e =>
+                                    (e.currentTarget.style.background =
+                                        "var(--glass)")
+                                }
+                            >
+                                <div style={{ marginBottom: 4 }}>
+                                    <Icon name={item.icon} color={item.color} />
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: "1.3rem",
+                                        fontWeight: 700,
+                                        color: item.color
+                                    }}
+                                >
+                                    {item.count}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: "0.75rem",
+                                        color: "var(--text-secondary)"
+                                    }}
+                                >
+                                    {item.label}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="summary-content" style={{ marginTop: 15 }}>
+                        {stats.sessionsToday > 0
+                            ? `${stats.sessionsToday} class${stats.sessionsToday !== 1 ? "es" : ""} submitted attendance today.`
+                            : "No attendance recorded yet today."}
+                    </div>
                 </div>
-                <div className="summary-content">
-                    {stats.sessionsToday > 0
-                        ? `${stats.sessionsToday} class${stats.sessionsToday !== 1 ? "es" : ""} submitted attendance today.`
-                        : "No attendance recorded yet today."}
-                </div>
-            </div>
+            )}
 
             {/* Class Submissions Today */}
             <div style={{ marginTop: 20 }}>
