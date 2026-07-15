@@ -304,6 +304,8 @@ a {
     top: 0;
     left: 0;
     right: 0;
+    width: 100%;
+    height: 100dvh;
     bottom: 0;
     background: rgba(0, 0, 0, 0.92) !important; /* ← was 0.8, now darker */
     backdrop-filter: blur(5px);
@@ -389,6 +391,7 @@ html.modal-open,
 body.modal-open {
     overflow: hidden;
     touch-action: none;
+    height: 100%;
 }
 /* ============================================================
    8. TOAST
