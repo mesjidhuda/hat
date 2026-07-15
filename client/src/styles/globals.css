@@ -1,4 +1,4 @@
-@import "./tokens.css";
+I@import "./tokens.css";
 
 /* ===== Reset & Base ===== */
 *,
@@ -601,7 +601,7 @@ a {
 
 /* ===== Modal ===== */
 .modal-overlay {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
