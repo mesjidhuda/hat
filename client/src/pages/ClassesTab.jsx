@@ -130,6 +130,56 @@ const Icon = ({ name, size = 18, color = "var(--text-secondary)" }) => {
                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                 <line x1="1" y1="1" x2="23" y2="23" />
             </svg>
+        ),
+        male: (
+            <svg
+                viewBox="0 0 24 24"
+                width={14}
+                height={14}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <circle cx="10" cy="10" r="4" />
+                <line x1="18" y1="6" x2="13.5" y2="10.5" />
+                <line x1="8" y1="8" x2="4" y2="4" />
+                <line x1="4" y1="4" x2="8" y2="4" />
+                <line x1="4" y1="4" x2="4" y2="8" />
+            </svg>
+        ),
+        female: (
+            <svg
+                viewBox="0 0 24 24"
+                width={14}
+                height={14}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <circle cx="12" cy="8" r="4" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="12" x2="12" y2="20" />
+                <line x1="8" y1="16" x2="16" y2="16" />
+            </svg>
+        ),
+        gender: (
+            <svg
+                viewBox="0 0 24 24"
+                width={14}
+                height={14}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+            </svg>
         )
     };
     return icons[name] || null;
@@ -147,6 +197,7 @@ export default function ClassesTab() {
     const [editingClass, setEditingClass] = useState(null);
     const [formName, setFormName] = useState("");
     const [formTeacher, setFormTeacher] = useState("");
+    const [formGender, setFormGender] = useState("");
     const [formPin, setFormPin] = useState("");
 
     // Delete confirmation state
@@ -189,6 +240,7 @@ export default function ClassesTab() {
         setEditingClass(null);
         setFormName("");
         setFormTeacher("");
+        setFormGender("");
         setFormPin("");
         setModalOpen(true);
     };
@@ -197,6 +249,7 @@ export default function ClassesTab() {
         setEditingClass(cls);
         setFormName(cls.name || "");
         setFormTeacher(cls.teacherName || "");
+        setFormGender(cls.gender || "");
         setFormPin("");
         setModalOpen(true);
     };
@@ -220,20 +273,18 @@ export default function ClassesTab() {
         }
 
         try {
+            const payload = {
+                name: formName.trim(),
+                teacherName: formTeacher.trim(),
+                gender: formGender || null
+            };
             if (editingClass) {
-                const payload = {
-                    name: formName.trim(),
-                    teacherName: formTeacher.trim()
-                };
                 if (formPin) payload.pin = formPin;
                 await api.put(`/classes/${editingClass._id}`, payload);
                 toast.success("Class updated");
             } else {
-                await api.post("/classes", {
-                    name: formName.trim(),
-                    teacherName: formTeacher.trim(),
-                    pin: formPin
-                });
+                payload.pin = formPin;
+                await api.post("/classes", payload);
                 toast.success("Class created");
             }
             setModalOpen(false);
@@ -263,7 +314,6 @@ export default function ClassesTab() {
 
     // ----- Toggle PIN visibility -----
     const handleTogglePin = async classId => {
-        // If already visible, hide it
         if (visiblePins[classId] !== undefined) {
             setVisiblePins(prev => {
                 const updated = { ...prev };
@@ -277,7 +327,6 @@ export default function ClassesTab() {
             const { data } = await api.get(`/classes/${classId}/pin`);
             if (data.pin) {
                 setVisiblePins(prev => ({ ...prev, [classId]: data.pin }));
-                // Auto‑hide after 10 seconds
                 setTimeout(() => {
                     setVisiblePins(prev => {
                         const updated = { ...prev };
@@ -497,6 +546,17 @@ export default function ClassesTab() {
                                             />
                                         </button>
                                     </span>
+                                    {cls.gender && (
+                                        <span
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 4
+                                            }}
+                                        >
+                                            {cls.gender}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -578,6 +638,25 @@ export default function ClassesTab() {
                         fontFamily: "inherit"
                     }}
                 />
+                <select
+                    value={formGender}
+                    onChange={e => setFormGender(e.target.value)}
+                    style={{
+                        background: "var(--glass)",
+                        border: "1px solid var(--glass-border)",
+                        borderRadius: 12,
+                        padding: "14px 16px",
+                        color: "var(--text-primary)",
+                        fontSize: "1rem",
+                        outline: "none",
+                        fontFamily: "inherit",
+                        marginBottom: 0
+                    }}
+                >
+                    <option value="">Select Gender (optional)</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
                 <input
                     type="password"
                     inputMode="numeric"
