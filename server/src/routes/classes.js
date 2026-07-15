@@ -4,7 +4,7 @@ const Class = require("../models/Class");
 const { protect } = require("../middleware/auth");
 const router = express.Router();
 
-// GET /api/classes – public (no auth) – only name, teacherName, _id
+// GET /api/classes – public (no auth) – only name, teacherName, gender, _id
 router.get("/", async (req, res) => {
     try {
         const classes = await Class.find().select("-pinHash -pinPlain");
@@ -19,7 +19,7 @@ router.use(protect);
 
 // POST /api/classes – create a new class
 router.post("/", async (req, res) => {
-    const { name, teacherName, pin } = req.body;
+    const { name, teacherName, pin, gender } = req.body;          // ← added gender
     if (!name || !teacherName || !pin || !/^\d{4}$/.test(pin)) {
         return res.status(400).json({
             message: "Class name, teacher name, and a 4‑digit PIN are required"
@@ -31,19 +31,19 @@ router.post("/", async (req, res) => {
         const newClass = await Class.create({
             name,
             teacherName,
+            gender: gender || null,        // ← save gender (or null)
             pinHash,
-            pinPlain: pin // store plain PIN for admin viewing
+            pinPlain: pin
         });
         res.status(201).json({
             _id: newClass._id,
             name: newClass.name,
-            teacherName: newClass.teacherName
+            teacherName: newClass.teacherName,
+            gender: newClass.gender
         });
     } catch (error) {
         if (error.code === 11000) {
-            return res
-                .status(400)
-                .json({ message: "Class name already exists" });
+            return res.status(400).json({ message: "Class name already exists" });
         }
         res.status(500).json({ message: "Server error" });
     }
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
 
 // PUT /api/classes/:id – update class
 router.put("/:id", async (req, res) => {
-    const { name, teacherName, pin } = req.body;
+    const { name, teacherName, pin, gender } = req.body;          // ← added gender
     try {
         const classDoc = await Class.findById(req.params.id);
         if (!classDoc)
@@ -59,27 +59,25 @@ router.put("/:id", async (req, res) => {
 
         if (name) classDoc.name = name;
         if (teacherName) classDoc.teacherName = teacherName;
+        if (gender !== undefined) classDoc.gender = gender || null;   // ← save gender
         if (pin) {
             if (!/^\d{4}$/.test(pin)) {
-                return res
-                    .status(400)
-                    .json({ message: "PIN must be exactly 4 digits" });
+                return res.status(400).json({ message: "PIN must be exactly 4 digits" });
             }
             const salt = await bcrypt.genSalt(12);
             classDoc.pinHash = await bcrypt.hash(pin, salt);
-            classDoc.pinPlain = pin; // update plain PIN as well
+            classDoc.pinPlain = pin;
         }
         await classDoc.save();
         res.json({
             _id: classDoc._id,
             name: classDoc.name,
-            teacherName: classDoc.teacherName
+            teacherName: classDoc.teacherName,
+            gender: classDoc.gender
         });
     } catch (error) {
         if (error.code === 11000) {
-            return res
-                .status(400)
-                .json({ message: "Class name already exists" });
+            return res.status(400).json({ message: "Class name already exists" });
         }
         res.status(500).json({ message: "Server error" });
     }
@@ -94,8 +92,7 @@ router.get("/:id/pin", async (req, res) => {
 
         if (!classDoc.pinPlain) {
             return res.status(400).json({
-                message:
-                    "PIN not available. Please edit this class and set the PIN again to enable viewing."
+                message: "PIN not available. Please edit this class and set the PIN again to enable viewing."
             });
         }
 
