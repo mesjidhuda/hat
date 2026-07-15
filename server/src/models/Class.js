@@ -13,6 +13,11 @@ const classSchema = new mongoose.Schema(
             required: [true, "Teacher name is required"],
             trim: true
         },
+        gender: {
+            type: String,
+            enum: ["Male", "Female", null],
+            default: null
+        },
         pinHash: {
             type: String,
             required: [true, "Class PIN hash is required"]
