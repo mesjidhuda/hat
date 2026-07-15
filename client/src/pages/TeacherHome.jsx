@@ -50,6 +50,7 @@ export default function TeacherHome() {
     const [error, setError] = useState("");
 
     const [selectedClass, setSelectedClass] = useState(null);
+    const [genderTab, setGenderTab] = useState("All"); // 'All', 'Male', 'Female'
 
     const todayEth = getTodayEthiopian();
 
@@ -117,6 +118,13 @@ export default function TeacherHome() {
         );
     }
 
+    // Filter classes based on selected tab
+    const filteredClasses = classes.filter(cls => {
+        if (genderTab === "Male") return cls.gender === "Male";
+        if (genderTab === "Female") return cls.gender === "Female";
+        return true; // "All"
+    });
+
     return (
         <div className="portal-container">
             {/* Full‑page PIN entry */}
@@ -151,7 +159,6 @@ export default function TeacherHome() {
                                         pin
                                     }
                                 );
-                                // ★ Clear any existing admin token so the interceptor uses the teacher token
                                 localStorage.removeItem("adminToken");
                                 sessionStorage.setItem(
                                     "teacherToken",
@@ -182,7 +189,7 @@ export default function TeacherHome() {
                             background: "none",
                             border: "none",
                             fontFamily: "inherit",
-                            textDecoration: "underline",
+                            textDecoration: "none",
                             opacity: 0.7
                         }}
                     >
@@ -245,11 +252,9 @@ export default function TeacherHome() {
                     </svg>
                     <span className="line"></span>
                 </div>
-
                 <h1 className="page-title">Teacher Portal</h1>
                 <p className="page-subtitle">Select your class</p>
                 <p className="page-date">{formatEthiopianDate(todayEth)}</p>
-
                 <div className="divider-container bottom-divider">
                     <span className="line"></span>
                     <svg viewBox="0 0 24 24" className="star-icon">
@@ -259,9 +264,54 @@ export default function TeacherHome() {
                 </div>
             </header>
 
+            {/* Gender Carousel Tabs */}
+            <div
+                style={{
+                    display: "flex",
+                    gap: 8,
+                    overflowX: "auto",
+                    paddingBottom: 10
+                }}
+            >
+                {["All", "Male", "Female"].map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setGenderTab(tab)}
+                        style={{
+                            background:
+                                genderTab === tab
+                                    ? "var(--accent)"
+                                    : "var(--glass)",
+                            color:
+                                genderTab === tab
+                                    ? "#000"
+                                    : "var(--text-secondary)",
+                            border: "1px solid var(--glass-border)",
+                            borderRadius: 20,
+                            padding: "8px 16px",
+                            fontWeight: 600,
+                            fontSize: "0.8rem",
+                            whiteSpace: "nowrap",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            boxShadow:
+                                genderTab === tab
+                                    ? "0 4px 12px rgba(212,175,55,0.3)"
+                                    : "none"
+                        }}
+                    >
+                        {tab === "Male"
+                            ? "Male"
+                            : tab === "Female"
+                              ? "Female"
+                              : "All"}
+                    </button>
+                ))}
+            </div>
+
             {/* Class List */}
             <div className="class-list">
-                {classes.length === 0 ? (
+                {filteredClasses.length === 0 ? (
                     <p
                         style={{
                             color: "var(--text-muted)",
@@ -269,10 +319,11 @@ export default function TeacherHome() {
                             padding: "20px 0"
                         }}
                     >
-                        No classes available.
+                        No {genderTab !== "All" ? genderTab.toLowerCase() : ""}{" "}
+                        teachers available.
                     </p>
                 ) : (
-                    classes.map(cls => (
+                    filteredClasses.map(cls => (
                         <div
                             key={cls._id}
                             className="class-card"
@@ -289,6 +340,17 @@ export default function TeacherHome() {
                                     <span className="card-subtitle">
                                         {cls.teacherName}
                                     </span>
+                                    {cls.gender && (
+                                        <span
+                                            style={{
+                                                fontSize: "0.7rem",
+                                                color: "var(--text-muted)",
+                                                marginTop: 2
+                                            }}
+                                        >
+                                            {cls.gender}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div className="card-arrow">
