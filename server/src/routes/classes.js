@@ -1,10 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const Class = require("../models/Class");
-const Student = require("../models/Student");
-const AttendanceRecord = require("../models/AttendanceRecord");
-const Flag = require("../models/Flag");
-const TeacherLog = require("../models/TeacherLog");
 const { protect } = require("../middleware/auth");
 const router = express.Router();
 
@@ -83,32 +79,14 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// DELETE /api/classes/:id – also removes students, their attendance & flags & logs
+// DELETE /api/classes/:id
 router.delete("/:id", async (req, res) => {
     try {
-        // 1. Find all students in this class
-        const students = await Student.find({ class: req.params.id });
-        const studentIds = students.map(s => s._id);
-
-        // 2. Delete their attendance records and flags
-        if (studentIds.length > 0) {
-            await AttendanceRecord.deleteMany({ student: { $in: studentIds } });
-            await Flag.deleteMany({ student: { $in: studentIds } });
-            // 3. Delete the students themselves
-            await Student.deleteMany({ class: req.params.id });
-        }
-
-        // 4. Delete teacher logs for this class
-        await TeacherLog.deleteMany({ class: req.params.id });
-
-        // 5. Delete the class
         const classDoc = await Class.findByIdAndDelete(req.params.id);
         if (!classDoc)
             return res.status(404).json({ message: "Class not found" });
-
-        res.json({ message: "Class and all associated students, records, flags, and logs deleted." });
+        res.json({ message: "Class deleted" });
     } catch (error) {
-        console.error("Class delete error:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
