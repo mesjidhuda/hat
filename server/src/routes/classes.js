@@ -83,14 +83,14 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// DELETE /api/classes/:id – also deletes students, attendance, flags, and logs
+// DELETE /api/classes/:id – also removes students, their attendance & flags & logs
 router.delete("/:id", async (req, res) => {
     try {
         // 1. Find all students in this class
         const students = await Student.find({ class: req.params.id });
         const studentIds = students.map(s => s._id);
 
-        // 2. Delete attendance records and flags for these students
+        // 2. Delete their attendance records and flags
         if (studentIds.length > 0) {
             await AttendanceRecord.deleteMany({ student: { $in: studentIds } });
             await Flag.deleteMany({ student: { $in: studentIds } });
