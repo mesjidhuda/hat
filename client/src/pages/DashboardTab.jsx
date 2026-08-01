@@ -255,7 +255,7 @@ export default function DashboardTab() {
                                 label: "Late",
                                 count: todaySummary.counts.Late,
                                 icon: "late",
-                                color: "#2196f3",
+                                color: "#ffc107",
                                 category: "late"
                             },
                             {
@@ -269,7 +269,7 @@ export default function DashboardTab() {
                                 label: "Excused",
                                 count: todaySummary.counts.Excused,
                                 icon: "excused",
-                                color: "#ffc107",
+                                color: "#2196f3",
                                 category: "excused"
                             },
                             {
